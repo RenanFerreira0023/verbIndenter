@@ -87,8 +87,19 @@ class VerbIndenterApp(tk.Tk):
         search_panel.pack(fill="x", pady=(0, 16))
 
         ttk.Label(search_panel, text="Pesquisar verbo", style="Label.TLabel").pack(anchor="w")
-        self.search_entry = ttk.Entry(search_panel, textvariable=self.query, style="Search.TEntry", font=("Segoe UI", 16))
-        self.search_entry.pack(fill="x", pady=(8, 0), ipady=8)
+        search_row = ttk.Frame(search_panel, style="Panel.TFrame")
+        search_row.pack(fill="x", pady=(8, 0))
+        search_row.columnconfigure(0, weight=1)
+
+        self.search_entry = ttk.Entry(search_row, textvariable=self.query, style="Search.TEntry", font=("Segoe UI", 16))
+        self.search_entry.grid(row=0, column=0, sticky="ew", ipady=8)
+        self.search_button = ttk.Button(
+            search_row,
+            text="Pesquisar",
+            style="Primary.TButton",
+            command=self.force_search,
+        )
+        self.search_button.grid(row=0, column=1, sticky="e", padx=(10, 0))
         self.search_entry.focus_set()
 
         content = ttk.Frame(root, style="Root.TFrame")
@@ -210,9 +221,16 @@ class VerbIndenterApp(tk.Tk):
     def schedule_search(self, *_args: object) -> None:
         if self.search_after_id is not None:
             self.after_cancel(self.search_after_id)
-        self.search_after_id = self.after(250, self.start_search)
+        self.search_after_id = self.after(2000, self.start_search)
+
+    def force_search(self) -> None:
+        if self.search_after_id is not None:
+            self.after_cancel(self.search_after_id)
+            self.search_after_id = None
+        self.start_search()
 
     def start_search(self) -> None:
+        self.search_after_id = None
         query = self.query.get().strip()
         self.request_number += 1
         current_request = self.request_number
